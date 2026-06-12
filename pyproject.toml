@@ -1,0 +1,23 @@
+[build-system]
+requires = ["setuptools>=61.0"]
+build-backend = "setuptools.build_meta"
+
+[project]
+name = "alloy-pm"
+version = "0.1.0"
+description = "API-driven universal package manager bridging system-level requirements and Python environments"
+readme = "README.md"
+requires-python = ">=3.8"
+
+# Define the dependencies your package manager needs to run
+dependencies = [
+    "httpx",
+    "typer",
+    "pydantic",
+    "pyyaml",
+    "distro; platform_system=='Linux'"
+]
+
+# 🚀 THIS REGISTER THE COMMAND ON BOTH LINUX AND WINDOWS
+[project.scripts]
+alloy = "alloy.cli:app"
