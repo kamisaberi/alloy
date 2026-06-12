@@ -1,7 +1,3 @@
-Here is the updated `README.md` for **Alloy**, reflecting the modern, lightning-fast **API-driven architecture** we just designed.
-
-***
-
 # 🔗 Alloy
 
 **The API-driven, universal package manager that bridges the gap between system-level requirements and Python environments.**
