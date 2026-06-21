@@ -1,10 +1,9 @@
-
 # ==========================================
 # 1. Package Metadata & Python Requirements
 # ==========================================
 package:
   name: detectron2
-  version: "1.2.0"
+  version: "2.0.0"
   description: "A high-performance computer vision library with C++ bindings."
   python_requires: ">=3.7"
 
@@ -51,52 +50,6 @@ system_requirements:
         env_vars:
           CC: "gcc-9"
           CXX: "g++-9"
-
-    centos:
-      # CentOS / RHEL 8 and newer
-      - os_version: ">=8"
-        package_manager: "dnf"
-        pre_install:
-          - "dnf install epel-release -y"
-          - "dnf config-manager --set-enabled powertools"
-        packages:
-          - gcc-c++
-          - cmake
-          - python3-devel
-          - opencv-devel
-
-  # ----------------------------------------
-  # MACOS
-  # ----------------------------------------
-  macos:
-    all:
-      # macOS 11 (Big Sur) and newer
-      - os_version: ">=11.0"
-        package_manager: "brew"
-        pre_install:
-          - "brew update"
-        packages:
-          - cmake
-          - opencv
-        env_vars:
-          # macOS often requires explicit paths to brew-installed libraries
-          CPPFLAGS: "-I/usr/local/opt/opencv/include"
-          LDFLAGS: "-L/usr/local/opt/opencv/lib"
-
-  # ----------------------------------------
-  # WINDOWS
-  # ----------------------------------------
-  windows:
-    all:
-      - os_version: ">=10"
-        package_manager: "choco"
-        packages:
-          - cmake --installargs 'ADD_CMAKE_TO_PATH=System'
-          - visualstudio2022buildtools
-          - opencv
-        env_vars:
-          OpenCV_DIR: "C:\\tools\\opencv\\build"
-
 # ==========================================
 # 3. Post-Install Instructions
 # ==========================================
