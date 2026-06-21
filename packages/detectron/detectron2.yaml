@@ -11,7 +11,6 @@ package:
   # Standard Python dependencies installed via pip
   python_dependencies:
     - torch>=1.18
-    - pybind11>=2.10.0
 
 # ==========================================
 # 2. System Requirements
