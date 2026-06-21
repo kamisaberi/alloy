@@ -1,1 +1,2 @@
 ### 1 - It seems we can not create cross-platform version of `alloy` for any types of operating systems. I prefer to focus only on single distribution of linux like ubuntu to make sure the application doing well, after that we can test it on other operating systems.
+-  first of all i should try to install some package like `detectron2` on clean system (like ubuntu 26.04) and after that create `yaml` file for it   
