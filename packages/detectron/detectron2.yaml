@@ -19,7 +19,7 @@ system_requirements:
   # ----------------------------------------
   linux:
     ubuntu:
-      # Constraint for Ubuntu 20.04 and 22.04
+      # Constraint for Ubuntu 20.04 through 26.04
       - os_version: ">=20.04"
         package_manager: "apt"
         pre_install:
