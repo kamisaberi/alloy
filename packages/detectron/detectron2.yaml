@@ -40,5 +40,5 @@ system_requirements:
 # ==========================================
 # Commands to execute after OS dependencies are met, but before Python install
 build_steps:
-  - "python -m pip install wheel"
-  - "python setup.py bdist_wheel"
+  - "pip install git+https://github.com/facebookresearch/detectron2.git@main --no-build-isolation"
+  - "python3 -m pip install git+https://github.com/facebookresearch/detectron2.git@main --no-build-isolation"
