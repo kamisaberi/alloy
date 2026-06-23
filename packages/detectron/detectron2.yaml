@@ -22,7 +22,7 @@ system_requirements:
   linux:
     ubuntu:
       # Constraint for Ubuntu 20.04 and 22.04
-      - os_version: ">=20.04"
+      - os_version: ">=2   0.04"
         package_manager: "apt"
         pre_install:
           - "apt-get update"
