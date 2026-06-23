@@ -27,8 +27,8 @@ system_requirements:
         pre_install:
           - "apt-get update"
         packages:
-          - gcc
-          - g++
+          - gcc-9
+          - g++-9
           - build-essential     # C++ Compilers
           - cmake               # Build system
           - python3-dev         # Python headers
