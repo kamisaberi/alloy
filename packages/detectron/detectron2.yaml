@@ -6,11 +6,9 @@ package:
   version: "0.6"
   description: "A high-performance computer vision library with C++ bindings."
   python_requires: ">=3.7"
-
   # Standard Python dependencies installed via pip
   python_dependencies:
     - torch>=1.18
-
 # ==========================================
 # 2. System Requirements
 # ==========================================
@@ -38,22 +36,6 @@ system_requirements:
           CC: "gcc-9"
           CXX: "g++-9"
 
-      # Fallback constraint for older Ubuntu (e.g., 18.04)
-      - os_version: "==18.04"
-        package_manager: "apt"
-        pre_install:
-          - "apt-get update"
-          - "add-apt-repository ppa:ubuntu-toolchain-r/test -y" # Need newer GCC
-          - "apt-get update"
-        packages:
-          - gcc-9
-          - g++-9
-          - cmake
-          - python3-dev
-          - libopencv-dev
-        env_vars:
-          CC: "gcc-9"
-          CXX: "g++-9"
 # ==========================================
 # 3. Post-Install Instructions
 # ==========================================
