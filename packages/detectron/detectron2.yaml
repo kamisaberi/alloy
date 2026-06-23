@@ -8,7 +8,7 @@ package:
   python_requires: ">=3.7"
   # Standard Python dependencies installed via pip
   python_dependencies:
-    - torch>=1.18
+#    - torch>=1.18
 # ==========================================
 # 2. System Requirements
 # ==========================================
