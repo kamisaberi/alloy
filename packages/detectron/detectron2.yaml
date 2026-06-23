@@ -4,7 +4,7 @@
 package:
   name: detectron2
   version: "0.6"
-  description: "A high-performance computer vision library with C++ bindings."
+  description: "Platform for object detection, segmentation and other visual recognition tasks."
   python_requires: ">=3.7"
   # Standard Python dependencies installed via pip
   python_dependencies:
@@ -13,7 +13,6 @@ package:
 # 2. System Requirements
 # ==========================================
 system_requirements:
-
   # ----------------------------------------
   # LINUX
   # ----------------------------------------
