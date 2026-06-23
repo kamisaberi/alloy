@@ -22,11 +22,13 @@ system_requirements:
   linux:
     ubuntu:
       # Constraint for Ubuntu 20.04 and 22.04
-      - os_version: ">=2   0.04"
+      - os_version: ">=20.04"
         package_manager: "apt"
         pre_install:
           - "apt-get update"
         packages:
+          - gcc
+          - g++
           - build-essential     # C++ Compilers
           - cmake               # Build system
           - python3-dev         # Python headers
