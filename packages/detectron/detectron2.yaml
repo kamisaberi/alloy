@@ -35,6 +35,8 @@ system_requirements:
           - libopencv-dev       # Core OS library required by HypoCV
         env_vars:
           CMAKE_BUILD_TYPE: "Release"
+          CC: "gcc-9"
+          CXX: "g++-9"
 
       # Fallback constraint for older Ubuntu (e.g., 18.04)
       - os_version: "==18.04"
