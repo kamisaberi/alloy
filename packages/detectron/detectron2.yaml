@@ -3,7 +3,7 @@
 # ==========================================
 package:
   name: detectron2
-  version: "2.0.0"
+  version: "0.6"
   description: "A high-performance computer vision library with C++ bindings."
   python_requires: ">=3.7"
 
