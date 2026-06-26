@@ -247,4 +247,38 @@ def remove(
         del db[package_lower]
         _save_installed_db(db)
 
+# ==========================================
+# Command 5: alloy info <package>
+# ==========================================
+
+@app.command()
+def info(package: str):
+    """
+    Queries and displays detailed system requirements for a specific package.
+    """
+    try:
+        recipe = manager.registry.get_recipe(package)
+        os_info = detect_os()
+
+        typer.secho(f"\n📋 Package: {recipe.package.name} ({recipe.package.version})", fg=typer.colors.CYAN, bold=True)
+        if recipe.package.description:
+            typer.echo(f"   Description: {recipe.package.description}")
+        if recipe.package.python_requires:
+            typer.echo(f"   Python req:  {recipe.package.python_requires}")
+        if recipe.package.python_dependencies:
+            typer.echo(f"   Pip deps:    {', '.join(recipe.package.python_dependencies)}")
+
+        try:
+            resolved = resolve_requirements(recipe, os_info)
+            typer.secho(f"\n🖥️  Requirements for your OS ({os_info.system}/{os_info.distribution}):", fg=typer.colors.GREEN, bold=True)
+            typer.echo(f"   Manager:     {resolved.package_manager}")
+            typer.echo(f"   System pkgs: {', '.join(resolved.packages) if resolved.packages else 'None'}")
+        except ResolutionError:
+            typer.secho(f"\n❌ Your current OS version ({os_info.version}) is not supported.", fg=typer.colors.RED)
+
+    except Exception as e:
+        typer.secho(f"❌ Failed to fetch info: {e}", fg=typer.colors.RED, err=True)
+
+
+
 
