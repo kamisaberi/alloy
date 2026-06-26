@@ -86,4 +86,28 @@ def update():
         typer.secho(f"❌ Update failed: {e}", fg=typer.colors.RED, err=True)
         raise typer.Exit(code=1)
 
+# =========================================================================
+# Command 2: alloy search <query>
+# =========================================================================
+
+@app.command()
+def search(query: str):
+    """
+    Performs an instant offline search over cached package definitions.
+    """
+    try:
+        matches = manager.registry.search_local(query)
+        if not matches:
+            typer.secho(f"No packages found matching: '{query}'", fg=typer.colors.YELLOW)
+            return
+
+        typer.secho(f"🔍 Found {len(matches)} matching package(s):\n", fg=typer.colors.CYAN, bold=True)
+        for pkg in matches:
+            typer.secho(f"👉 {pkg.name} ({pkg.version})", fg=typer.colors.GREEN, bold=True)
+            if pkg.description:
+                typer.echo(f"   Description: {pkg.description}\n")
+    except RegistryError as e:
+        typer.secho(f"❌ Search failed: {e}", fg=typer.colors.RED, err=True)
+        raise typer.Exit(code=1)
+
 
