@@ -25,5 +25,15 @@ from alloy.managers.choco import ChocoPackageManager
 from alloy.managers.dnf import DnfPackageManager
 from alloy.managers.pacman import PacmanPackageManager
 
+# Map of raw recipe keys to concrete manager classes
+PM_MAP = {
+    "apt": AptPackageManager,
+    "apt-get": AptPackageManager,
+    "brew": BrewPackageManager,
+    "choco": ChocoPackageManager,
+    "dnf": DnfPackageManager,
+    "yum": DnfPackageManager,
+    "pacman": PacmanPackageManager,
+}
 
 
