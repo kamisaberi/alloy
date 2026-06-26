@@ -338,5 +338,64 @@ def doctor():
         typer.secho("\n⚠️  Warning: No native package managers were discovered on your system PATH.", fg=typer.colors.YELLOW)
 
 
+# ==========================================
+# Command 8: alloy init
+# ==========================================
+
+@app.command()
+def init():
+    """
+    Generates a boilerplate recipe template in the current directory.
+    """
+    target = Path("alloy.yaml")
+    if target.is_file():
+        typer.secho("❌ 'alloy.yaml' already exists in this folder.", fg=typer.colors.RED)
+        raise typer.Exit(code=1)
+
+    boilerplate = """# =========================================================================
+# Alloy Recipe Configuration Schema
+# =========================================================================
+package:
+  name: "your-library"
+  version: "1.0.0"
+  description: "A short summary explaining what the library does."
+  python_requires: ">=3.8"
+  python_dependencies:
+    - "numpy>=1.21.0"
+
+system_requirements:
+  linux:
+    ubuntu:
+      - os_version: ">=20.04"
+        package_manager: "apt"
+        pre_install:
+          - "apt-get update"
+        packages:
+          - "build-essential"
+          - "cmake"
+        env_vars:
+          CMAKE_BUILD_TYPE: "Release"
+  macos:
+    all:
+      - os_version: ">=11.0"
+        package_manager: "brew"
+        packages:
+          - "cmake"
+  windows:
+    all:
+      - os_version: ">=10"
+        package_manager: "choco"
+        packages:
+          - "cmake"
+
+build_steps:
+  - "pip install ."
+"""
+    try:
+        target.write_text(boilerplate, encoding="utf-8")
+        typer.secho("✅ Template 'alloy.yaml' generated successfully in the current folder!", fg=typer.colors.GREEN)
+    except OSError as e:
+        typer.secho(f"❌ Failed to write template: {e}", fg=typer.colors.RED)
+
 
 
