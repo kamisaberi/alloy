@@ -72,5 +72,18 @@ def _save_installed_db(db: dict) -> None:
 # =========================================================================
 # Command 1: alloy update
 # =========================================================================
+@app.command()
+def update():
+    """
+    Syncs the local lightweight index with the remote package registry.
+    """
+    typer.secho("⏳ Fetching remote registry package index...", fg=typer.colors.CYAN)
+    try:
+        manager.write_default_config()  # Ensure config exists [2]
+        count = manager.registry.update_registry()
+        typer.secho(f"✅ Sync complete! Cached {count} package definitions locally.", fg=typer.colors.GREEN, bold=True)
+    except RegistryError as e:
+        typer.secho(f"❌ Update failed: {e}", fg=typer.colors.RED, err=True)
+        raise typer.Exit(code=1)
 
 
