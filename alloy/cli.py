@@ -111,3 +111,90 @@ def search(query: str):
         raise typer.Exit(code=1)
 
 
+# =========================================================================
+# Command 3: alloy install <package>
+# =========================================================================
+
+@app.command()
+def install(
+    package: str = typer.Argument(..., help="Package name from registry or path to a local alloy.yaml file"),
+    dry_run: bool = typer.Option(False, "--dry-run", help="Evaluate the installation requirements without modifying files"),
+    force: bool = typer.Option(False, "--force", help="Skip checking for cached configurations and force redownloading")
+):
+    """
+    Resolves OS and Python requirements, installs system packages, and builds the library.
+    """
+    try:
+        # Step 1: Parse the recipe (Detect if local file path or remote API target)
+        path_target = Path(package)
+        if path_target.is_file():
+            typer.secho(f"📄 Parsing local recipe file: {package}", fg=typer.colors.CYAN)
+            recipe = parse_recipe_file(path_target)
+        else:
+            typer.secho(f"⏳ Fetching recipe for '{package}' from registry...", fg=typer.colors.CYAN)
+            recipe = manager.registry.get_recipe(package, force_update=force)
+
+        # Step 2: Discover OS details
+        os_info = detect_os()
+        typer.echo(f"🖥️  Detected OS: {os_info.system} (Distro: {os_info.distribution}, Version: {os_info.version})")
+
+        # Step 3: Resolve version constraints
+        resolved_config = resolve_requirements(recipe, os_info)
+
+        # Step 4: Redundancy check - check which system dependencies are already installed
+        pm_class = PM_MAP.get(resolved_config.package_manager.lower())
+        missing_packages = resolved_config.packages.copy()
+        already_installed = []
+
+        if pm_class:
+            pm = pm_class()
+            if pm.is_available() and resolved_config.packages:
+                missing_packages = []
+                for pkg in resolved_config.packages:
+                    if pm.is_installed(pkg):
+                        already_installed.append(pkg)
+                    else:
+                        missing_packages.append(pkg)
+
+        # Step 5: Dry-Run reporting
+        if dry_run:
+            typer.secho("\n📢 --- Dry-Run Evaluation Summary ---", fg=typer.colors.YELLOW, bold=True)
+            typer.echo(f"   Target Package:      {recipe.package.name} ({recipe.package.version})")
+            typer.echo(f"   Native Manager:      {resolved_config.package_manager}")
+            typer.echo(f"   Already Installed:   {', '.join(already_installed) if already_installed else 'None'}")
+            typer.echo(f"   Packages to Install: {', '.join(missing_packages) if missing_packages else 'None'}")
+            if resolved_config.env_vars:
+                typer.echo("   Env Injections:")
+                for k, v in resolved_config.env_vars.items():
+                    typer.echo(f"     {k}={v}")
+            typer.echo("   Python Build Steps:")
+            for step in recipe.build_steps:
+                typer.echo(f"     - {step}")
+            return
+
+        # Step 6: Trigger Installation [3]
+        if already_installed:
+            typer.secho(f"ℹ️  Skipping already-installed system packages: {', '.join(already_installed)}", fg=typer.colors.BLUE)
+
+        # Temporarily update resolved config to omit packages that are already present
+        resolved_config.packages = missing_packages
+
+        # Run system and python setup [3]
+        run_installation(resolved_config, recipe.build_steps)
+
+        # Step 7: Record installation state locally
+        db = _load_installed_db()
+        db[recipe.package.name.lower()] = {
+            "version": recipe.package.version,
+            "package_manager": resolved_config.package_manager,
+            "system_packages": resolved_config.packages + already_installed
+        }
+        _save_installed_db(db)
+
+        typer.secho(f"\n🎉 Successfully installed {recipe.package.name}!", fg=typer.colors.GREEN, bold=True)
+
+    except (RecipeParseError, ResolutionError, ExecutionError, RegistryError) as e:
+        typer.secho(f"\n❌ Installation failed: {e}", fg=typer.colors.RED, err=True)
+        raise typer.Exit(code=1)
+
+
