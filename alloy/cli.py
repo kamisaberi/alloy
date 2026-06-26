@@ -198,3 +198,53 @@ def install(
         raise typer.Exit(code=1)
 
 
+# ==========================================
+# Command 4: alloy remove <package>
+# ==========================================
+
+@app.command()
+def remove(
+    package: str = typer.Argument(..., help="Name of the installed package to remove"),
+    purge: bool = typer.Option(False, "--purge", help="Attempt to uninstall all system dependencies that were installed with it")
+):
+    """
+    Uninstalls the specified Python library, with optional native system package purging.
+    """
+    package_lower = package.lower().strip()
+    db = _load_installed_db()
+
+    # Step 1: Run standard pip uninstall
+    typer.secho(f"⏳ Uninstalling Python package '{package}'...", fg=typer.colors.CYAN)
+    try:
+        subprocess.run([sys.executable, "-m", "pip", "uninstall", "-y", package], check=True)
+        typer.secho(f"✅ Python package '{package}' uninstalled successfully.", fg=typer.colors.GREEN)
+    except subprocess.CalledProcessError:
+        typer.secho(f"⚠️  Failed to cleanly remove pip package '{package}'. It might have already been deleted.", fg=typer.colors.YELLOW)
+
+    # Step 2: Handle Native System Purging
+    if purge and package_lower in db:
+        record = db[package_lower]
+        sys_pkgs = record.get("system_packages", [])
+        pm_name = record.get("package_manager", "")
+        pm_class = PM_MAP.get(pm_name.lower())
+
+        if sys_pkgs and pm_class:
+            pm = pm_class()
+            if pm.is_available():
+                typer.secho(f"\n⚠️  Purge requested: Do you want to uninstall system packages: {', '.join(sys_pkgs)}?", fg=typer.colors.YELLOW, bold=True)
+                confirm = typer.confirm("Are you sure you want to proceed?")
+                if confirm:
+                    try:
+                        pm.uninstall(sys_pkgs)
+                        typer.secho("✅ Native system package purge complete.", fg=typer.colors.GREEN)
+                    except Exception as e:
+                        typer.secho(f"❌ System purge failed: {e}", fg=typer.colors.RED)
+            else:
+                typer.secho(f"⚠️  Cannot purge: Native package manager '{pm_name}' is not available.", fg=typer.colors.YELLOW)
+
+    # Step 3: Delete database state reference
+    if package_lower in db:
+        del db[package_lower]
+        _save_installed_db(db)
+
+
