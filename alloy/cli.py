@@ -37,3 +37,40 @@ PM_MAP = {
 }
 
 
+# Define CLI app
+app = typer.Typer(
+    help="Alloy: The universal, API-driven Python and System Package Manager.",
+    rich_markup_mode="markdown"
+)
+
+# Instantiate the global manager (bootstraps cache, client, config automatically)
+manager = AlloyRegistryManager()
+INSTALLED_DB = Path.home() / ".alloy" / "installed.json"
+
+
+# =========================================================================
+# Helper State Persistence Methods
+# =========================================================================
+
+def _load_installed_db() -> dict:
+    if not INSTALLED_DB.is_file():
+        return {}
+    try:
+        return json.loads(INSTALLED_DB.read_text(encoding="utf-8"))
+    except Exception:
+        return {}
+
+
+def _save_installed_db(db: dict) -> None:
+    INSTALLED_DB.parent.mkdir(parents=True, exist_ok=True)
+    try:
+        INSTALLED_DB.write_text(json.dumps(db, indent=2), encoding="utf-8")
+    except OSError:
+        pass
+
+
+# =========================================================================
+# Command 1: alloy update
+# =========================================================================
+
+
