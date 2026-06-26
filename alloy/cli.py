@@ -281,4 +281,22 @@ def info(package: str):
 
 
 
+# ==========================================
+# Command 6: alloy clean
+# ==========================================
+
+@app.command()
+def clean():
+    """
+    Clears out the local cache of downloaded recipes to free up disk space.
+    """
+    try:
+        stats = manager.cache.get_stats()
+        manager.cache.clear()
+        typer.secho(f"✅ Cache cleared successfully. Deleted {stats['file_count']} files ({stats['size_readable']}).", fg=typer.colors.GREEN)
+    except Exception as e:
+        typer.secho(f"❌ Failed to clear cache: {e}", fg=typer.colors.RED, err=True)
+
+
+
 
