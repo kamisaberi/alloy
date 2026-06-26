@@ -398,4 +398,10 @@ build_steps:
         typer.secho(f"❌ Failed to write template: {e}", fg=typer.colors.RED)
 
 
+# ==========================================
+# CLI Standard Entrypoint
+# ==========================================
+
+if __name__ == "__main__":
+    app()
 
