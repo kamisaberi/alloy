@@ -299,4 +299,44 @@ def clean():
 
 
 
+# ==========================================
+# Command 7: alloy doctor
+# ==========================================
+
+@app.command()
+def doctor():
+    """
+    Runs diagnostic health checks on your current host environment.
+    """
+    typer.secho("🏥 Running Alloy Diagnostics...", fg=typer.colors.CYAN, bold=True)
+
+    # 1. Check Python
+    py_version = f"{sys.version_info.major}.{sys.version_info.minor}.{sys.version_info.micro}"
+    typer.echo(f"   Python Version:  {py_version} ({'✅' if sys.version_info.major >= 3 and sys.version_info.minor >= 8 else '❌ Minimum 3.8 needed'})")
+
+    # 2. Check OS
+    os_info = detect_os()
+    typer.echo(f"   Operating Sys:   {os_info.system} ({os_info.distribution} version {os_info.version})")
+
+    # 3. Check Configuration file
+    typer.echo(f"   Config File:     {CONFIG_FILE} ({'✅ Exists' if CONFIG_FILE.is_file() else '⚠️  Missing (Defaults will be created on update)'})")
+
+    # 4. Check Native Package Managers
+    typer.secho("\n📦 Checking Native Package Managers:", fg=typer.colors.CYAN)
+    found_any = False
+    for name, pm_class in PM_MAP.items():
+        pm = pm_class()
+        # To avoid listing aliases twice
+        if name in ("apt-get", "yum"):
+            continue
+        status = "✅ Available" if pm.is_available() else "❌ Not found"
+        if pm.is_available():
+            found_any = True
+        typer.echo(f"   - {pm.name:<10} {status}")
+
+    if not found_any:
+        typer.secho("\n⚠️  Warning: No native package managers were discovered on your system PATH.", fg=typer.colors.YELLOW)
+
+
+
 
