@@ -74,10 +74,13 @@ def _save_installed_db(db: dict) -> None:
 # =========================================================================
 @app.command()
 def update():
+
     """
     Syncs the local lightweight index with the remote package registry.
     """
     typer.secho("⏳ Fetching remote registry package index...", fg=typer.colors.CYAN)
+    pass
+    typer.secho("This Feature is not available yet", fg=typer.colors.RED)
     try:
         manager.write_default_config()  # Ensure config exists [2]
         count = manager.registry.update_registry()
