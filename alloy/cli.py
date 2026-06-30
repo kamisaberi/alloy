@@ -98,6 +98,9 @@ def search(query: str):
     """
     Performs an instant offline search over cached package definitions.
     """
+    typer.secho("The Search Feature is not available yet", fg=typer.colors.RED)
+    pass
+
     try:
         matches = manager.registry.search_local(query)
         if not matches:
