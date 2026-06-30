@@ -213,9 +213,14 @@ def remove(
     package: str = typer.Argument(..., help="Name of the installed package to remove"),
     purge: bool = typer.Option(False, "--purge", help="Attempt to uninstall all system dependencies that were installed with it")
 ):
+
     """
     Uninstalls the specified Python library, with optional native system package purging.
     """
+
+    typer.secho("The Remove Feature is not available yet", fg=typer.colors.RED)
+    pass
+
     package_lower = package.lower().strip()
     db = _load_installed_db()
 
