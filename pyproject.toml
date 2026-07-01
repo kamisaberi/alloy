@@ -2,12 +2,6 @@
 requires = ["setuptools>=61.0"]
 build-backend = "setuptools.build_meta"
 
-
-
-
-
-
-
 [project]
 name = "alloy-pm"
 version = "0.1.0"
@@ -24,6 +18,10 @@ dependencies = [
     "distro; platform_system=='Linux'"
 ]
 
-# 🚀 THIS REGISTER THE COMMAND ON BOTH LINUX AND WINDOWS
+# 🚀 THIS REGISTERS THE COMMAND ON BOTH LINUX AND WINDOWS
 [project.scripts]
 alloy = "alloy.cli:app"
+
+# 🛠️ THE FIX: EXPLICITLY DEFINE WHICH FOLDERS CONSTITUTE YOUR LIBRARY
+[tool.setuptools.packages.find]
+include = ["alloy*"]
