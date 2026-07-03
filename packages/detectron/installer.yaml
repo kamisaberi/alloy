@@ -7,7 +7,7 @@ package:
   description: "Platform for object detection, segmentation and other visual recognition tasks."
   python_requires: ">=3.7"
   # Standard Python dependencies installed via pip
-  python_dependencies:
+#  python_dependencies:
 #    - torch>=1.18
 # ==========================================
 # 2. System Requirements
