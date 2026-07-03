@@ -22,7 +22,7 @@ system_requirements:
       - os_version: ">=20.04"
         package_manager: "apt"
         pre_install:
-          - "apt-get update"
+          - "sudo apt update"
         packages:
           - build-essential     # C++ Compilers
           - cmake               # Build system
