@@ -138,8 +138,11 @@ def install(
         package = "/home/kami/detectorn2"
         print("tets")
         path_target = Path(package)
+        print("tets")
         typer.secho(f"📄 Parsing local recipe file: {package}", fg=typer.colors.CYAN)
+        print("tets")
         recipe = parse_recipe_file(path_target)
+        print("tets")
 
         # path_target = Path(package)
         # if path_target.is_file():
