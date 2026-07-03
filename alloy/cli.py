@@ -132,6 +132,9 @@ def install(
     """
     try:
         # Step 1: Parse the recipe (Detect if local file path or remote API target)
+
+
+        # TODO START right now online service is unavailable
         path_target = Path(package)
         if path_target.is_file():
             typer.secho(f"📄 Parsing local recipe file: {package}", fg=typer.colors.CYAN)
@@ -139,6 +142,9 @@ def install(
         else:
             typer.secho(f"⏳ Fetching recipe for '{package}' from registry...", fg=typer.colors.CYAN)
             recipe = manager.registry.get_recipe(package, force_update=force)
+
+        # TODO right now online service is unavailable
+
 
         # Step 2: Discover OS details
         os_info = detect_os()
