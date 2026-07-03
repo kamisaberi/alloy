@@ -135,7 +135,7 @@ def install(
 
 
         # TODO START right now online service is unavailable
-        package = "/home/kami/detectorn2"
+        package = "/home/kami/detectron2/installer.yaml"
         print("tets")
         path_target = Path(package)
         print("tets")
