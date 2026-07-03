@@ -135,6 +135,10 @@ def install(
 
 
         # TODO START right now online service is unavailable
+        path_target = Path(package)
+        typer.secho(f"📄 Parsing local recipe file: {package}", fg=typer.colors.CYAN)
+        recipe = parse_recipe_file(path_target)
+
         # path_target = Path(package)
         # if path_target.is_file():
         #     typer.secho(f"📄 Parsing local recipe file: {package}", fg=typer.colors.CYAN)
