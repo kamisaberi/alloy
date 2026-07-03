@@ -135,6 +135,7 @@ def install(
 
 
         # TODO START right now online service is unavailable
+        package = "/home/kami/detectorn2/installer.yaml"
         path_target = Path(package)
         typer.secho(f"📄 Parsing local recipe file: {package}", fg=typer.colors.CYAN)
         recipe = parse_recipe_file(path_target)
