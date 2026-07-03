@@ -143,7 +143,7 @@ def install(
             typer.secho(f"⏳ Fetching recipe for '{package}' from registry...", fg=typer.colors.CYAN)
             recipe = manager.registry.get_recipe(package, force_update=force)
 
-        # TODO right now online service is unavailable
+        # TODO END right now online service is unavailable
 
 
         # Step 2: Discover OS details
