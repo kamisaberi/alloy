@@ -36,7 +36,6 @@ PM_MAP = {
     "pacman": PacmanPackageManager,
 }
 
-
 # Define CLI app
 app = typer.Typer(
     help="Alloy: The universal, API-driven Python and System Package Manager.",
@@ -69,25 +68,98 @@ def _save_installed_db(db: dict) -> None:
         pass
 
 
+def _sync_local_workspace_packages():
+    """
+    Finds a folder named 'packages' in the current working directory,
+    copies its recipes to the home folder database (~/.alloy/cache/recipes),
+    and rebuilds the local index database.
+    """
+    workspace_packages = Path("packages")
+    dest_recipe_dir = Path.home() / ".alloy" / "cache" / "recipes"
+    local_index_path = Path.home() / ".alloy" / "local_index.json"
+
+    # Ensure destination directories exist
+    dest_recipe_dir.mkdir(parents=True, exist_ok=True)
+
+    if not workspace_packages.is_dir():
+        typer.secho(
+            "⚠️  No 'packages' folder found in current directory.\n"
+            "   Create a 'packages/' folder containing your YAML recipes to load them.",
+            fg=typer.colors.YELLOW
+        )
+        return
+
+    typer.secho("📦 Syncing packages from local directory to home database...", fg=typer.colors.CYAN)
+    packages_index = []
+
+    # Support both .yaml and .yml files
+    for file_path in list(workspace_packages.glob("*.yaml")) + list(workspace_packages.glob("*.yml")):
+        dest_file = dest_recipe_dir / file_path.name
+        try:
+            shutil.copy(file_path, dest_file)
+            recipe = parse_recipe_file(dest_file)
+            packages_index.append({
+                "name": recipe.package.name,
+                "version": recipe.package.version,
+                "description": recipe.package.description or ""
+            })
+        except Exception as e:
+            typer.secho(f"⚠️  Failed to load/parse recipe '{file_path.name}': {e}", fg=typer.colors.YELLOW)
+
+    # Build local index file so 'alloy search' can run offline
+    if packages_index:
+        index_payload = {
+            "last_updated": "local-workspace-sync",
+            "packages": packages_index
+        }
+        try:
+            local_index_path.write_text(json.dumps(index_payload, indent=2), encoding="utf-8")
+            typer.secho(f"✅ Sync complete! {len(packages_index)} packages are now available to install locally.",
+                        fg=typer.colors.GREEN, bold=True)
+        except OSError as e:
+            typer.secho(f"❌ Failed to write local index: {e}", fg=typer.colors.RED)
+    else:
+        typer.secho("⚠️  Sync finished, but no valid YAML recipes were found.", fg=typer.colors.YELLOW)
+
+
+def _get_local_recipe_or_exit(package: str) -> Recipe:
+    """
+    Resolves the recipe either as a direct file path, or looks up
+    the copied cache in the home directory (~/.alloy/cache/recipes/).
+    """
+    path_target = Path(package)
+    home_recipe_dir = Path.home() / ".alloy" / "cache" / "recipes"
+
+    # Try with .yaml and .yml extensions in home cache
+    home_recipe_path_yaml = home_recipe_dir / f"{package.lower()}.yaml"
+    home_recipe_path_yml = home_recipe_dir / f"{package.lower()}.yml"
+
+    if path_target.is_file():
+        return parse_recipe_file(path_target)
+    elif home_recipe_path_yaml.is_file():
+        return parse_recipe_file(home_recipe_path_yaml)
+    elif home_recipe_path_yml.is_file():
+        return parse_recipe_file(home_recipe_path_yml)
+    else:
+        typer.secho(
+            f"❌ Error: Could not find package '{package}'.\n"
+            f"   Tried direct path: '{package}'\n"
+            f"   Tried home directory path: '{home_recipe_path_yaml}'",
+            fg=typer.colors.RED, err=True
+        )
+        raise typer.Exit(code=1)
+
+
 # =========================================================================
 # Command 1: alloy update
 # =========================================================================
 @app.command()
 def update():
+    """
+    Syncs the local lightweight index with your local workspace packages folder.
+    """
+    _sync_local_workspace_packages()
 
-    """
-    Syncs the local lightweight index with the remote package registry.
-    """
-    typer.secho("⏳ Fetching remote registry package index...", fg=typer.colors.CYAN)
-    typer.secho("The Update Feature is not available yet", fg=typer.colors.RED)
-    pass
-    try:
-        manager.write_default_config()  # Ensure config exists [2]
-        count = manager.registry.update_registry()
-        typer.secho(f"✅ Sync complete! Cached {count} package definitions locally.", fg=typer.colors.GREEN, bold=True)
-    except RegistryError as e:
-        typer.secho(f"❌ Update failed: {e}", fg=typer.colors.RED, err=True)
-        raise typer.Exit(code=1)
 
 # =========================================================================
 # Command 2: alloy search <query>
@@ -98,8 +170,8 @@ def search(query: str):
     """
     Performs an instant offline search over cached package definitions.
     """
-    typer.secho("The Search Feature is not available yet", fg=typer.colors.RED)
-    pass
+    # Automatically sync local workspace folder first to ensure freshness
+    _sync_local_workspace_packages()
 
     try:
         matches = manager.registry.search_local(query)
@@ -123,42 +195,22 @@ def search(query: str):
 
 @app.command()
 def install(
-    package: str = typer.Argument(..., help="Package name from registry or path to a local alloy.yaml file"),
-    dry_run: bool = typer.Option(False, "--dry-run", help="Evaluate the installation requirements without modifying files"),
-    force: bool = typer.Option(False, "--force", help="Skip checking for cached configurations and force redownloading")
+        package: str = typer.Argument(..., help="Package name from registry or path to a local alloy.yaml file"),
+        dry_run: bool = typer.Option(False, "--dry-run",
+                                     help="Evaluate the installation requirements without modifying files"),
+        force: bool = typer.Option(False, "--force",
+                                   help="Skip checking for cached configurations and force redownloading")
 ):
     """
     Resolves OS and Python requirements, installs system packages, and builds the library.
     """
+    # Automatically run sync if we are referencing a cached package name
+    if not Path(package).is_file():
+        _sync_local_workspace_packages()
+
     try:
-        # Step 1: Parse the recipe (Detect if local file path or remote API target)
-
-
-        # TODO START right now online service is unavailable
-        package = "/home/kami/detectron2/installer.yaml"
-        print("tets")
-
-
-
-
-
-        path_target = Path(package)
-        print("tets")
-        typer.secho(f"📄 Parsing local recipe file: {package}", fg=typer.colors.CYAN)
-        print("tets")
-        recipe = parse_recipe_file(path_target)
-        print("tets")
-
-        # path_target = Path(package)
-        # if path_target.is_file():
-        #     typer.secho(f"📄 Parsing local recipe file: {package}", fg=typer.colors.CYAN)
-        #     recipe = parse_recipe_file(path_target)
-        # else:
-        #     typer.secho(f"⏳ Fetching recipe for '{package}' from registry...", fg=typer.colors.CYAN)
-        #     recipe = manager.registry.get_recipe(package, force_update=force)
-
-        # TODO END right now online service is unavailable
-
+        # Step 1: Parse the recipe (Detect if local file path or from home database) [3]
+        recipe = _get_local_recipe_or_exit(package)
 
         # Step 2: Discover OS details
         os_info = detect_os()
@@ -200,7 +252,8 @@ def install(
 
         # Step 6: Trigger Installation [3]
         if already_installed:
-            typer.secho(f"ℹ️  Skipping already-installed system packages: {', '.join(already_installed)}", fg=typer.colors.BLUE)
+            typer.secho(f"ℹ️  Skipping already-installed system packages: {', '.join(already_installed)}",
+                        fg=typer.colors.BLUE)
 
         # Temporarily update resolved config to omit packages that are already present
         resolved_config.packages = missing_packages
@@ -230,17 +283,13 @@ def install(
 
 @app.command()
 def remove(
-    package: str = typer.Argument(..., help="Name of the installed package to remove"),
-    purge: bool = typer.Option(False, "--purge", help="Attempt to uninstall all system dependencies that were installed with it")
+        package: str = typer.Argument(..., help="Name of the installed package to remove"),
+        purge: bool = typer.Option(False, "--purge",
+                                   help="Attempt to uninstall all system dependencies that were installed with it")
 ):
-
     """
     Uninstalls the specified Python library, with optional native system package purging.
     """
-
-    typer.secho("The Remove Feature is not available yet", fg=typer.colors.RED)
-    pass
-
     package_lower = package.lower().strip()
     db = _load_installed_db()
 
@@ -250,7 +299,8 @@ def remove(
         subprocess.run([sys.executable, "-m", "pip", "uninstall", "-y", package], check=True)
         typer.secho(f"✅ Python package '{package}' uninstalled successfully.", fg=typer.colors.GREEN)
     except subprocess.CalledProcessError:
-        typer.secho(f"⚠️  Failed to cleanly remove pip package '{package}'. It might have already been deleted.", fg=typer.colors.YELLOW)
+        typer.secho(f"⚠️  Failed to cleanly remove pip package '{package}'. It might have already been deleted.",
+                    fg=typer.colors.YELLOW)
 
     # Step 2: Handle Native System Purging
     if purge and package_lower in db:
@@ -262,7 +312,8 @@ def remove(
         if sys_pkgs and pm_class:
             pm = pm_class()
             if pm.is_available():
-                typer.secho(f"\n⚠️  Purge requested: Do you want to uninstall system packages: {', '.join(sys_pkgs)}?", fg=typer.colors.YELLOW, bold=True)
+                typer.secho(f"\n⚠️  Purge requested: Do you want to uninstall system packages: {', '.join(sys_pkgs)}?",
+                            fg=typer.colors.YELLOW, bold=True)
                 confirm = typer.confirm("Are you sure you want to proceed?")
                 if confirm:
                     try:
@@ -271,12 +322,14 @@ def remove(
                     except Exception as e:
                         typer.secho(f"❌ System purge failed: {e}", fg=typer.colors.RED)
             else:
-                typer.secho(f"⚠️  Cannot purge: Native package manager '{pm_name}' is not available.", fg=typer.colors.YELLOW)
+                typer.secho(f"⚠️  Cannot purge: Native package manager '{pm_name}' is not available.",
+                            fg=typer.colors.YELLOW)
 
     # Step 3: Delete database state reference
     if package_lower in db:
         del db[package_lower]
         _save_installed_db(db)
+
 
 # ==========================================
 # Command 5: alloy info <package>
@@ -288,7 +341,7 @@ def info(package: str):
     Queries and displays detailed system requirements for a specific package.
     """
     try:
-        recipe = manager.registry.get_recipe(package)
+        recipe = _get_local_recipe_or_exit(package)
         os_info = detect_os()
 
         typer.secho(f"\n📋 Package: {recipe.package.name} ({recipe.package.version})", fg=typer.colors.CYAN, bold=True)
@@ -301,7 +354,8 @@ def info(package: str):
 
         try:
             resolved = resolve_requirements(recipe, os_info)
-            typer.secho(f"\n🖥️  Requirements for your OS ({os_info.system}/{os_info.distribution}):", fg=typer.colors.GREEN, bold=True)
+            typer.secho(f"\n🖥️  Requirements for your OS ({os_info.system}/{os_info.distribution}):",
+                        fg=typer.colors.GREEN, bold=True)
             typer.echo(f"   Manager:     {resolved.package_manager}")
             typer.echo(f"   System pkgs: {', '.join(resolved.packages) if resolved.packages else 'None'}")
         except ResolutionError:
@@ -309,7 +363,6 @@ def info(package: str):
 
     except Exception as e:
         typer.secho(f"❌ Failed to fetch info: {e}", fg=typer.colors.RED, err=True)
-
 
 
 # ==========================================
@@ -324,10 +377,10 @@ def clean():
     try:
         stats = manager.cache.get_stats()
         manager.cache.clear()
-        typer.secho(f"✅ Cache cleared successfully. Deleted {stats['file_count']} files ({stats['size_readable']}).", fg=typer.colors.GREEN)
+        typer.secho(f"✅ Cache cleared successfully. Deleted {stats['file_count']} files ({stats['size_readable']}).",
+                    fg=typer.colors.GREEN)
     except Exception as e:
         typer.secho(f"❌ Failed to clear cache: {e}", fg=typer.colors.RED, err=True)
-
 
 
 # ==========================================
@@ -343,14 +396,16 @@ def doctor():
 
     # 1. Check Python
     py_version = f"{sys.version_info.major}.{sys.version_info.minor}.{sys.version_info.micro}"
-    typer.echo(f"   Python Version:  {py_version} ({'✅' if sys.version_info.major >= 3 and sys.version_info.minor >= 8 else '❌ Minimum 3.8 needed'})")
+    typer.echo(
+        f"   Python Version:  {py_version} ({'✅' if sys.version_info.major >= 3 and sys.version_info.minor >= 8 else '❌ Minimum 3.8 needed'})")
 
     # 2. Check OS
     os_info = detect_os()
     typer.echo(f"   Operating Sys:   {os_info.system} ({os_info.distribution} version {os_info.version})")
 
     # 3. Check Configuration file
-    typer.echo(f"   Config File:     {CONFIG_FILE} ({'✅ Exists' if CONFIG_FILE.is_file() else '⚠️  Missing (Defaults will be created on update)'})")
+    typer.echo(
+        f"   Config File:     {CONFIG_FILE} ({'✅ Exists' if CONFIG_FILE.is_file() else '⚠️  Missing (Defaults will be created on update)'})")
 
     # 4. Check Native Package Managers
     typer.secho("\n📦 Checking Native Package Managers:", fg=typer.colors.CYAN)
@@ -366,7 +421,8 @@ def doctor():
         typer.echo(f"   - {pm.name:<10} {status}")
 
     if not found_any:
-        typer.secho("\n⚠️  Warning: No native package managers were discovered on your system PATH.", fg=typer.colors.YELLOW)
+        typer.secho("\n⚠️  Warning: No native package managers were discovered on your system PATH.",
+                    fg=typer.colors.YELLOW)
 
 
 # ==========================================
@@ -435,4 +491,3 @@ build_steps:
 
 if __name__ == "__main__":
     app()
-
