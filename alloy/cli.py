@@ -137,6 +137,11 @@ def install(
         # TODO START right now online service is unavailable
         package = "/home/kami/detectron2/installer.yaml"
         print("tets")
+
+
+
+
+
         path_target = Path(package)
         print("tets")
         typer.secho(f"📄 Parsing local recipe file: {package}", fg=typer.colors.CYAN)
