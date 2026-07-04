@@ -3,6 +3,19 @@
 # Exit immediately if a command exits with a non-zero status
 set -e
 
+# --- 1. Identify Source Directory ---
+# Automatically switch to the directory where this install script is located.
+# This prevents 'pip install .' from failing if run from outside the repository [3].
+SCRIPT_DIR="$( cd "$( dirname "${BASH_SOURCE[0]}" )" &> /dev/null && pwd )"
+cd "$SCRIPT_DIR"
+
+# Verify that we are indeed in the Alloy repository containing the pyproject.toml [3]
+if [ ! -f "pyproject.toml" ]; then
+    echo "❌ Error: Could not find 'pyproject.toml' in $SCRIPT_DIR."
+    echo "   Please make sure you run this script from inside the Alloy repository folder."
+    exit 1
+fi
+
 # --- Configuration ---
 INSTALL_DIR="$HOME/.local/share/alloy"
 BIN_DIR="$HOME/.local/bin"
@@ -10,7 +23,7 @@ SHELL_CONFIG=""
 
 echo "🔗 Starting Alloy Linux Installer..."
 
-# --- 1. Check Dependencies ---
+# --- 2. Check Dependencies ---
 if ! command -v python3 &> /dev/null; then
     echo "❌ Error: python3 is not installed. Please install it first."
     exit 1
@@ -19,21 +32,21 @@ fi
 # Ensure python3-venv is available
 if ! python3 -m venv --help &> /dev/null; then
     echo "❌ Error: python3-venv is missing."
-    echo "Please install it using your package manager (e.g., 'sudo apt install python3-venv')."
+    echo "   Please install it using your package manager (e.g., 'sudo apt install python3-venv')."
     exit 1
 fi
 
-# --- 2. Create Isolated Environment ---
-echo "⚙️ Creating isolated environment at $INSTALL_DIR..."
+# --- 3. Create Isolated Environment ---
+echo "⚙️  Creating isolated environment at $INSTALL_DIR..."
 mkdir -p "$INSTALL_DIR"
 python3 -m venv "$INSTALL_DIR/venv"
 
-# --- 3. Install Alloy ---
+# --- 4. Install Alloy ---
 echo "📦 Installing Alloy and dependencies..."
 "$INSTALL_DIR/venv/bin/pip" install --upgrade pip setuptools wheel
 "$INSTALL_DIR/venv/bin/pip" install .
 
-# --- 4. Expose the CLI Binary via Symlink ---
+# --- 5. Expose the CLI Binary via Symlink ---
 echo "🚀 Exposing 'alloy' command globally..."
 mkdir -p "$BIN_DIR"
 
@@ -41,11 +54,11 @@ mkdir -p "$BIN_DIR"
 rm -f "$BIN_DIR/alloy"
 ln -s "$INSTALL_DIR/venv/bin/alloy" "$BIN_DIR/alloy"
 
-# --- 5. Verify PATH Configuration ---
-# Detect the user's active shell config file
-if [ -n "$ZSH_VERSION" ] || [ -f "$HOME/.zshrc" ]; then
+# --- 6. Verify PATH Configuration ---
+# Detect the user's active shell using the $SHELL environment variable
+if [[ "$SHELL" == *"zsh"* ]] && [ -f "$HOME/.zshrc" ]; then
     SHELL_CONFIG="$HOME/.zshrc"
-elif [ -n "$BASH_VERSION" ] || [ -f "$HOME/.bashrc" ]; then
+elif [[ "$SHELL" == *"bash"* ]] && [ -f "$HOME/.bashrc" ]; then
     SHELL_CONFIG="$HOME/.bashrc"
 else
     SHELL_CONFIG="$HOME/.profile"
