@@ -1,0 +1,44 @@
+# ==========================================
+# 1. Package Metadata & Python Requirements
+# ==========================================
+package:
+  name: detectron2
+  version: "0.6"
+  description: "Platform for object detection, segmentation and other visual recognition tasks."
+  python_requires: ">=3.7"
+  # Standard Python dependencies installed via pip
+  python_dependencies:
+#    - torch>=1.18
+# ==========================================
+# 2. System Requirements
+# ==========================================
+system_requirements:
+  # ----------------------------------------
+  # LINUX
+  # ----------------------------------------
+  linux:
+    ubuntu:
+      # Constraint for Ubuntu 20.04 through 26.04
+      - os_version: ">=20.04"
+        package_manager: "apt"
+        pre_install:
+          - "apt-get update"
+        packages:
+          - gcc-9
+          - g++-9
+          - build-essential     # C++ Compilers
+          - cmake               # Build system
+          - python3-dev         # Python headers
+          - libopencv-dev       # Core OS library required by HypoCV
+        env_vars:
+          CMAKE_BUILD_TYPE: "Release"
+          CC: "gcc-9"
+          CXX: "g++-9"
+
+# ==========================================
+# 3. Post-Install Instructions
+# ==========================================
+# Commands to execute after OS dependencies are met, but before Python install
+build_steps:
+  - "pip install git+https://github.com/facebookresearch/detectron2.git@main --no-build-isolation"
+  - "python3 -m pip install git+https://github.com/facebookresearch/detectron2.git@main --no-build-isolation"
