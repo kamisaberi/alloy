@@ -21,6 +21,11 @@ INSTALL_DIR="$HOME/.local/share/alloy"
 BIN_DIR="$HOME/.local/bin"
 SHELL_CONFIG=""
 
+
+
+
+
+
 echo "🔗 Starting Alloy Linux Installer..."
 
 # --- 2. Check Dependencies ---
