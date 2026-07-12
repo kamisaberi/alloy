@@ -48,8 +48,9 @@ fi
 
 echo "✅ Using Python executable: $(command -v $PYTHON_EXE) ($($PYTHON_EXE --version))"
 
-# Ensure python3-venv (or venv module) is available
-if ! $PYTHON_EXE -m venv --help &> /dev/null; then
+# 🛠️ FIXED: Query the interpreter directly to see if venv is importable.
+# This prevents strict Debian environment quirks from throwing false-positive errors.
+if ! $PYTHON_EXE -c "import venv" &> /dev/null; then
     echo "❌ Error: Python venv module is missing."
     echo "   Please install it using your package manager (e.g., 'sudo apt install python3-venv')."
     exit 1
