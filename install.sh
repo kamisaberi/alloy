@@ -1,5 +1,11 @@
 #!/bin/bash
 
+# Safe Guard: If this script is run with 'sh' (which maps to 'dash' on Ubuntu),
+# force re-execution with 'bash' to avoid syntax errors like "Bad substitution" [1].
+if [ -z "$BASH_VERSION" ]; then
+    exec bash "$0" "$@"
+fi
+
 # Exit immediately if a command exits with a non-zero status
 set -e
 
@@ -48,12 +54,11 @@ fi
 
 echo "✅ Using Python executable: $(command -v $PYTHON_EXE) ($($PYTHON_EXE --version))"
 
-# 🛠️ FIXED: Query the interpreter directly to see if venv is importable.
-# This prevents strict Debian environment quirks from throwing false-positive errors.
+# Query the interpreter directly to see if venv is importable.
 if ! $PYTHON_EXE -c "import venv" &> /dev/null; then
     echo "❌ Error: Python venv module is missing."
     echo "   Please install it using your package manager (e.g., 'sudo apt install python3-venv')."
-#    exit 1
+    exit 1
 fi
 
 # --- 4. Create Isolated Environment ---
@@ -75,7 +80,7 @@ rm -f "$BIN_DIR/alloy"
 ln -s "$INSTALL_DIR/venv/bin/alloy" "$BIN_DIR/alloy"
 
 # --- 7. Verify PATH Configuration ---
-# Detect the user's active shell using the $SHELL environment variable
+# Detect the user's active shell using the $SHELL environment variable [4]
 if [[ "$SHELL" == *"zsh"* ]] && [ -f "$HOME/.zshrc" ]; then
     SHELL_CONFIG="$HOME/.zshrc"
 elif [[ "$SHELL" == *"bash"* ]] && [ -f "$HOME/.bashrc" ]; then
