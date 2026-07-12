@@ -106,3 +106,8 @@ else
 fi
 
 echo "🎉 Alloy installed successfully! Type 'alloy --help' to get started."
+
+
+
+#echo 'export PATH="$HOME/.local/bin:$PATH"' >> ~/.bashrc
+#source ~/.bashrc
