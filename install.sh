@@ -53,7 +53,7 @@ echo "✅ Using Python executable: $(command -v $PYTHON_EXE) ($($PYTHON_EXE --ve
 if ! $PYTHON_EXE -c "import venv" &> /dev/null; then
     echo "❌ Error: Python venv module is missing."
     echo "   Please install it using your package manager (e.g., 'sudo apt install python3-venv')."
-    exit 1
+#    exit 1
 fi
 
 # --- 4. Create Isolated Environment ---
