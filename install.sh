@@ -105,6 +105,11 @@ else
     echo "✅ PATH is already correctly configured."
 fi
 
+
+
+
+
+
 echo "🎉 Alloy installed successfully! Type 'alloy --help' to get started."
 
 
