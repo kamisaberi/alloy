@@ -42,3 +42,7 @@ system_requirements:
 build_steps:
   - "pip install git+https://github.com/facebookresearch/detectron2.git@main --no-build-isolation"
   - "python3 -m pip install git+https://github.com/facebookresearch/detectron2.git@main --no-build-isolation"
+
+
+
+
