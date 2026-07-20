@@ -10,7 +10,7 @@ import typer
 
 # --- Core Modules ---
 from alloy.core.os_detector import detect_os
-from alloy.core.parser import parse_recipe_file, parse_recipe_string, RecipeParseError
+from alloy.core.parser import parse_recipe_file, parse_recipe_string, RecipeParseError, Recipe
 from alloy.core.resolver import resolve_requirements, ResolutionError
 from alloy.core.runner import run_installation, ExecutionError
 
