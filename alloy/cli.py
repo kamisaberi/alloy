@@ -431,14 +431,14 @@ def doctor():
 @app.command()
 def init():
     """
-    Generates a boilerplate recipe template in the current directory.
+    Generates a local recipe template and configures global registry settings.
     """
+    # --- Step 1: Scaffold local alloy.yaml template ---
     target = Path("alloy.yaml")
     if target.is_file():
         typer.secho("❌ 'alloy.yaml' already exists in this folder.", fg=typer.colors.RED)
-        raise typer.Exit(code=1)
-
-    boilerplate = """# =========================================================================
+    else:
+        boilerplate = """# =========================================================================
 # Alloy Recipe Configuration Schema
 # =========================================================================
 package:
@@ -477,13 +477,49 @@ system_requirements:
 build_steps:
   - "pip install ."
 """
-    try:
-        target.write_text(boilerplate, encoding="utf-8")
-        typer.secho("✅ Template 'alloy.yaml' generated successfully in the current folder!", fg=typer.colors.GREEN)
-    except OSError as e:
-        typer.secho(f"❌ Failed to write template: {e}", fg=typer.colors.RED)
+        try:
+            target.write_text(boilerplate, encoding="utf-8")
+            typer.secho("✅ Template 'alloy.yaml' generated successfully in the current folder!", fg=typer.colors.GREEN)
+        except OSError as e:
+            typer.secho(f"❌ Failed to write template: {e}", fg=typer.colors.RED)
 
+    # --- Step 2: Automate Global config.yaml Configuration ---
+    typer.echo("")
+    typer.secho("⚙️  Global Configuration Setup", fg=typer.colors.CYAN, bold=True)
 
+    # Prompt the user for their GitHub username
+    github_username = typer.prompt(
+        "Enter your GitHub username to configure your global static registry\n(or press Enter to skip global config)",
+        default=""
+    )
+
+    if github_username.strip():
+        username = github_username.strip().lower()
+        api_url = f"https://{username}.github.io/alloy-registry/v1"[15]
+
+        # Build the configuration data [2]
+        config_data = {
+            "api_url": api_url,
+            "timeout": 10.0,
+            "recipe_ttl_seconds": 86400,
+            "cache_dir": "~/.alloy/cache"
+        }
+
+        try:
+            import yaml
+            # Ensure ~/.alloy directory exists on the user's system [2]
+            CONFIG_FILE.parent.mkdir(parents=True, exist_ok=True)
+
+            with open(CONFIG_FILE, "w", encoding="utf-8") as f:
+                yaml.safe_dump(config_data, f, default_flow_style=False)
+
+            typer.secho(f"✅ Global settings configured successfully!", fg=typer.colors.GREEN, bold=True)
+            typer.echo(f"   Saved to: {CONFIG_FILE}")
+            typer.echo(f"   Registry Pointing to: {api_url}")[15]
+        except Exception as e:
+            typer.secho(f"❌ Failed to write global configuration: {e}", fg=typer.colors.RED)
+    else:
+        typer.secho("ℹ️  Skipped global configuration setup. Default settings will be used.", fg=typer.colors.BLUE)
 # ==========================================
 # CLI Standard Entrypoint
 # ==========================================
