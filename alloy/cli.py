@@ -1,3 +1,4 @@
+# alloy/cli.py
 import json
 import os
 import shutil
@@ -6,10 +7,11 @@ import sys
 from pathlib import Path
 from typing import Optional
 import typer
+import yaml
 
 # --- Core Modules ---
 from alloy.core.os_detector import detect_os
-from alloy.core.parser import parse_recipe_file, parse_recipe_string, RecipeParseError, Recipe
+from alloy.core.parser import parse_recipe_file, parse_recipe_string, RecipeParseError
 from alloy.core.resolver import resolve_requirements, ResolutionError
 from alloy.core.runner import run_installation, ExecutionError
 
@@ -51,6 +53,7 @@ INSTALLED_DB = Path.home() / ".alloy" / "installed.json"
 # =========================================================================
 
 def _load_installed_db() -> dict:
+    """Loads the local JSON database that tracks installed state."""
     if not INSTALLED_DB.is_file():
         return {}
     try:
@@ -60,6 +63,7 @@ def _load_installed_db() -> dict:
 
 
 def _save_installed_db(db: dict) -> None:
+    """Saves the local state database back to disk."""
     INSTALLED_DB.parent.mkdir(parents=True, exist_ok=True)
     try:
         INSTALLED_DB.write_text(json.dumps(db, indent=2), encoding="utf-8")
@@ -71,7 +75,7 @@ def _sync_local_workspace_packages():
     """
     Finds a folder named 'packages' in the current working directory,
     copies its recipes to the home folder database (~/.alloy/cache/recipes),
-    and rebuilds the local index database.
+    and rebuilds the local index database [3].
     """
     workspace_packages = Path("packages")
     dest_recipe_dir = Path.home() / ".alloy" / "cache" / "recipes"
@@ -82,7 +86,7 @@ def _sync_local_workspace_packages():
 
     if not workspace_packages.is_dir():
         typer.secho(
-            "⚠️  No 'packages' folder found in current directory.\n"
+            "⚠️  No 'packages/' folder found in current directory.\n"
             "   Create a 'packages/' folder containing your YAML recipes to load them.",
             fg=typer.colors.YELLOW
         )
@@ -124,7 +128,7 @@ def _sync_local_workspace_packages():
 def _get_local_recipe_or_exit(package: str) -> Recipe:
     """
     Resolves the recipe either as a direct file path, or looks up
-    the copied cache in the home directory (~/.alloy/cache/recipes/).
+    the copied cache in the home directory (~/.alloy/cache/recipes/) [3].
     """
     path_target = Path(package)
     home_recipe_dir = Path.home() / ".alloy" / "cache" / "recipes"
@@ -152,6 +156,7 @@ def _get_local_recipe_or_exit(package: str) -> Recipe:
 # =========================================================================
 # Command 1: alloy update
 # =========================================================================
+
 @app.command()
 def update():
     """
@@ -488,15 +493,14 @@ build_steps:
     typer.secho("⚙️  Global Configuration Setup", fg=typer.colors.CYAN, bold=True)
 
     # Prompt the user for their GitHub username
-    # github_username = typer.prompt(
-    #     "Enter your GitHub username to configure your global static registry\n(or press Enter to skip global config)",
-    #     default=""
-    # )
+    github_username = typer.prompt(
+        "Enter your GitHub username to configure your global static registry\n(or press Enter to skip global config)",
+        default=""
+    )
 
-    github_username = "kamisaberi"
     if github_username.strip():
         username = github_username.strip().lower()
-        api_url = f"https://{username}.github.io/alloy-registry/v1"
+        api_url = f"https://{username}.github.io/alloy-registry/v1"[15]
 
         # Build the configuration data [2]
         config_data = {
@@ -507,7 +511,6 @@ build_steps:
         }
 
         try:
-            import yaml
             # Ensure ~/.alloy directory exists on the user's system [2]
             CONFIG_FILE.parent.mkdir(parents=True, exist_ok=True)
 
@@ -521,6 +524,8 @@ build_steps:
             typer.secho(f"❌ Failed to write global configuration: {e}", fg=typer.colors.RED)
     else:
         typer.secho("ℹ️  Skipped global configuration setup. Default settings will be used.", fg=typer.colors.BLUE)
+
+
 # ==========================================
 # CLI Standard Entrypoint
 # ==========================================
