@@ -516,6 +516,7 @@ build_steps:
             CONFIG_FILE.parent.mkdir(parents=True, exist_ok=True)
 
             with open(CONFIG_FILE, "w", encoding="utf-8") as f:
+                # TODO ERROR WHILE GETTING DATA
                 yaml.safe_dump(config_data, f, default_flow_style=False)
 
             typer.secho(f"✅ Global settings configured successfully!", fg=typer.colors.GREEN, bold=True)
