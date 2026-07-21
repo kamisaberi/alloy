@@ -488,11 +488,12 @@ build_steps:
     typer.secho("⚙️  Global Configuration Setup", fg=typer.colors.CYAN, bold=True)
 
     # Prompt the user for their GitHub username
-    github_username = typer.prompt(
-        "Enter your GitHub username to configure your global static registry\n(or press Enter to skip global config)",
-        default=""
-    )
+    # github_username = typer.prompt(
+    #     "Enter your GitHub username to configure your global static registry\n(or press Enter to skip global config)",
+    #     default=""
+    # )
 
+    github_username = "kamisaberi"
     if github_username.strip():
         username = github_username.strip().lower()
         api_url = f"https://{username}.github.io/alloy-registry/v1"[15]
