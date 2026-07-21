@@ -25,7 +25,7 @@ RECIPE_CACHE_DIR = CACHE_DIR / "recipes"
 LOCAL_INDEX_PATH = ALLOY_DIR / "local_index.json"
 
 # Default fallback to your GitHub Pages URL structure
-DEFAULT_API_URL = "https://yourusername.github.io/alloy-registry/v1"
+DEFAULT_API_URL = "https://kamisaberi.github.io/alloy-registry/v1"
 
 
 class AlloyAPIClient:
