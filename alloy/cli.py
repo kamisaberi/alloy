@@ -506,7 +506,7 @@ build_steps:
         # Build the configuration data [2]
         config_data = {
             "api_url": api_url,
-            "timeout": 10.0,
+            "timeout": 100.0,
             "recipe_ttl_seconds": 86400,
             "cache_dir": "~/.alloy/cache"
         }
