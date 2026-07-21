@@ -497,10 +497,11 @@ build_steps:
         "Enter your GitHub username to configure your global static registry\n(or press Enter to skip global config)",
         default=""
     )
+    github_username = "kamisaberi"
 
     if github_username.strip():
         username = github_username.strip().lower()
-        api_url = f"https://{username}.github.io/alloy-registry/v1"[15]
+        api_url = f"https://{username}.github.io/alloy-registry/v1"
 
         # Build the configuration data [2]
         config_data = {
