@@ -521,7 +521,7 @@ build_steps:
 
             typer.secho(f"✅ Global settings configured successfully!", fg=typer.colors.GREEN, bold=True)
             typer.echo(f"   Saved to: {CONFIG_FILE}")
-            typer.echo(f"   Registry Pointing to: {api_url}")[15]
+            typer.echo(f"   Registry Pointing to: {api_url}")
         except Exception as e:
             typer.secho(f"❌ Failed to write global configuration: {e}", fg=typer.colors.RED)
     else:
