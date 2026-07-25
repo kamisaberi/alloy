@@ -132,58 +132,58 @@ def _sync_local_workspace_packages():
         typer.secho("⚠️  Sync finished, but no valid 'recipes.yaml' files were found inside subfolders.",
                     fg=typer.colors.YELLOW)
 
-def _sync_local_workspace_packages():
-    """
-    Finds a folder named 'packages' in the current working directory,
-    copies its recipes to the home folder database (~/.alloy/cache/recipes),
-    and rebuilds the local index database [3].
-    """
-    workspace_packages = Path("packages")
-    dest_recipe_dir = Path.home() / ".alloy" / "cache" / "recipes"
-    local_index_path = Path.home() / ".alloy" / "local_index.json"
-
-    # Ensure destination directories exist
-    dest_recipe_dir.mkdir(parents=True, exist_ok=True)
-
-    if not workspace_packages.is_dir():
-        typer.secho(
-            "⚠️  No 'packages/' folder found in current directory.\n"
-            "   Create a 'packages/' folder containing your YAML recipes to load them.",
-            fg=typer.colors.YELLOW
-        )
-        return
-
-    typer.secho("📦 Syncing packages from local directory to home database...", fg=typer.colors.CYAN)
-    packages_index = []
-
-    # Support both .yaml and .yml files
-    for file_path in list(workspace_packages.glob("*.yaml")) + list(workspace_packages.glob("*.yml")):
-        dest_file = dest_recipe_dir / file_path.name
-        try:
-            shutil.copy(file_path, dest_file)
-            recipe = parse_recipe_file(dest_file)
-            packages_index.append({
-                "name": recipe.package.name,
-                "version": recipe.package.version,
-                "description": recipe.package.description or ""
-            })
-        except Exception as e:
-            typer.secho(f"⚠️  Failed to load/parse recipe '{file_path.name}': {e}", fg=typer.colors.YELLOW)
-
-    # Build local index file so 'alloy search' can run offline
-    if packages_index:
-        index_payload = {
-            "last_updated": "local-workspace-sync",
-            "packages": packages_index
-        }
-        try:
-            local_index_path.write_text(json.dumps(index_payload, indent=2), encoding="utf-8")
-            typer.secho(f"✅ Sync complete! {len(packages_index)} packages are now available to install locally.",
-                        fg=typer.colors.GREEN, bold=True)
-        except OSError as e:
-            typer.secho(f"❌ Failed to write local index: {e}", fg=typer.colors.RED)
-    else:
-        typer.secho("⚠️  Sync finished, but no valid YAML recipes were found.", fg=typer.colors.YELLOW)
+# def _sync_local_workspace_packages():
+#     """
+#     Finds a folder named 'packages' in the current working directory,
+#     copies its recipes to the home folder database (~/.alloy/cache/recipes),
+#     and rebuilds the local index database [3].
+#     """
+#     workspace_packages = Path("packages")
+#     dest_recipe_dir = Path.home() / ".alloy" / "cache" / "recipes"
+#     local_index_path = Path.home() / ".alloy" / "local_index.json"
+#
+#     # Ensure destination directories exist
+#     dest_recipe_dir.mkdir(parents=True, exist_ok=True)
+#
+#     if not workspace_packages.is_dir():
+#         typer.secho(
+#             "⚠️  No 'packages/' folder found in current directory.\n"
+#             "   Create a 'packages/' folder containing your YAML recipes to load them.",
+#             fg=typer.colors.YELLOW
+#         )
+#         return
+#
+#     typer.secho("📦 Syncing packages from local directory to home database...", fg=typer.colors.CYAN)
+#     packages_index = []
+#
+#     # Support both .yaml and .yml files
+#     for file_path in list(workspace_packages.glob("*.yaml")) + list(workspace_packages.glob("*.yml")):
+#         dest_file = dest_recipe_dir / file_path.name
+#         try:
+#             shutil.copy(file_path, dest_file)
+#             recipe = parse_recipe_file(dest_file)
+#             packages_index.append({
+#                 "name": recipe.package.name,
+#                 "version": recipe.package.version,
+#                 "description": recipe.package.description or ""
+#             })
+#         except Exception as e:
+#             typer.secho(f"⚠️  Failed to load/parse recipe '{file_path.name}': {e}", fg=typer.colors.YELLOW)
+#
+#     # Build local index file so 'alloy search' can run offline
+#     if packages_index:
+#         index_payload = {
+#             "last_updated": "local-workspace-sync",
+#             "packages": packages_index
+#         }
+#         try:
+#             local_index_path.write_text(json.dumps(index_payload, indent=2), encoding="utf-8")
+#             typer.secho(f"✅ Sync complete! {len(packages_index)} packages are now available to install locally.",
+#                         fg=typer.colors.GREEN, bold=True)
+#         except OSError as e:
+#             typer.secho(f"❌ Failed to write local index: {e}", fg=typer.colors.RED)
+#     else:
+#         typer.secho("⚠️  Sync finished, but no valid YAML recipes were found.", fg=typer.colors.YELLOW)
 
 
 def _get_local_recipe_or_exit(package: str) -> Recipe:
