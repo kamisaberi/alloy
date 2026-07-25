@@ -73,6 +73,67 @@ def _save_installed_db(db: dict) -> None:
 
 def _sync_local_workspace_packages():
     """
+    Recursively finds 'recipes.yaml' files inside local subfolders (e.g. packages/detectron2/recipes.yaml),
+    copies them to the home folder database (~/.alloy/cache/recipes/detectron2.yaml),
+    and rebuilds the local index database [3, 17].
+    """
+    workspace_packages = Path("packages")
+    dest_recipe_dir = Path.home() / ".alloy" / "cache" / "recipes"
+    local_index_path = Path.home() / ".alloy" / "local_index.json"
+
+    # Ensure destination directories exist
+    dest_recipe_dir.mkdir(parents=True, exist_ok=True)
+
+    if not workspace_packages.is_dir():
+        typer.secho(
+            "⚠️  No 'packages/' folder found in current directory.\n"
+            "   Create a 'packages/' folder containing package subfolders with 'recipes.yaml' files.",
+            fg=typer.colors.YELLOW
+        )
+        return
+
+    typer.secho("📦 Syncing packages from local directory to home database...", fg=typer.colors.CYAN)
+    packages_index = []
+
+    # 🛠️ RECURSIVE GLOB: Finds all recipes.yaml files in subfolders (e.g., 'packages/detectron2/recipes.yaml') [17]
+    recipe_files = list(workspace_packages.glob("**/recipes.yaml")) + list(workspace_packages.glob("**/recipes.yml"))
+    # Fallback to singular for safety
+    recipe_files += list(workspace_packages.glob("**/recipe.yaml")) + list(workspace_packages.glob("**/recipe.yml"))
+
+    for file_path in recipe_files:
+        # Extract the package name from the folder name containing the recipe [17]
+        pkg_name = file_path.parent.name.lower().strip()
+        dest_file = dest_recipe_dir / f"{pkg_name}.yaml"
+
+        try:
+            shutil.copy(file_path, dest_file)
+            recipe = parse_recipe_file(dest_file)
+            packages_index.append({
+                "name": recipe.package.name,
+                "version": recipe.package.version,
+                "description": recipe.package.description or ""
+            })
+        except Exception as e:
+            typer.secho(f"⚠️  Failed to load/parse recipe '{file_path.name}': {e}", fg=typer.colors.YELLOW)
+
+    # Build local index file so 'alloy search' can run offline
+    if packages_index:
+        index_payload = {
+            "last_updated": "local-workspace-sync",
+            "packages": packages_index
+        }
+        try:
+            local_index_path.write_text(json.dumps(index_payload, indent=2), encoding="utf-8")
+            typer.secho(f"✅ Sync complete! {len(packages_index)} packages are now available to install locally.",
+                        fg=typer.colors.GREEN, bold=True)
+        except OSError as e:
+            typer.secho(f"❌ Failed to write local index: {e}", fg=typer.colors.RED)
+    else:
+        typer.secho("⚠️  Sync finished, but no valid 'recipes.yaml' files were found inside subfolders.",
+                    fg=typer.colors.YELLOW)
+
+def _sync_local_workspace_packages():
+    """
     Finds a folder named 'packages' in the current working directory,
     copies its recipes to the home folder database (~/.alloy/cache/recipes),
     and rebuilds the local index database [3].
