@@ -42,8 +42,8 @@ class AlloyAPIClient:
 
     def fetch_recipe(self, package_name: str, use_cache: bool = True) -> str:
         """
-        Retrieves the YAML recipe for a package.
-        Checks local cache first. If missing, downloads from static host and caches it.
+        Retrieves the YAML recipe for a package from the remote static server.
+        Checks local cache first.
         """
         cache_path = RECIPE_CACHE_DIR / f"{package_name}.yaml"
 
@@ -51,8 +51,8 @@ class AlloyAPIClient:
             return cache_path.read_text(encoding="utf-8")
 
         try:
-            # 🛠️ STATIC ADJUSTMENT: Appends '/recipe.yaml' explicitly [15]
-            response = self.client.get(f"/packages/{package_name}/recipe.yaml")
+            # 🛠️ PLURAL CORRECTION: Appends '/recipes.yaml' (with an 's') [15]
+            response = self.client.get(f"/packages/{package_name}/recipes.yaml")
             self._handle_http_errors(response, package_name)
             yaml_content = response.text
 
@@ -63,6 +63,31 @@ class AlloyAPIClient:
 
         except httpx.RequestError as e:
             raise APIConnectionError(f"Network error while fetching recipe for '{package_name}': {e}")
+
+
+    # def fetch_recipe(self, package_name: str, use_cache: bool = True) -> str:
+    #     """
+    #     Retrieves the YAML recipe for a package.
+    #     Checks local cache first. If missing, downloads from static host and caches it.
+    #     """
+    #     cache_path = RECIPE_CACHE_DIR / f"{package_name}.yaml"
+    #
+    #     if use_cache and cache_path.is_file():
+    #         return cache_path.read_text(encoding="utf-8")
+    #
+    #     try:
+    #         # 🛠️ STATIC ADJUSTMENT: Appends '/recipe.yaml' explicitly [15]
+    #         response = self.client.get(f"/packages/{package_name}/recipe.yaml")
+    #         self._handle_http_errors(response, package_name)
+    #         yaml_content = response.text
+    #
+    #         RECIPE_CACHE_DIR.mkdir(parents=True, exist_ok=True)
+    #         cache_path.write_text(yaml_content, encoding="utf-8")
+    #
+    #         return yaml_content
+    #
+    #     except httpx.RequestError as e:
+    #         raise APIConnectionError(f"Network error while fetching recipe for '{package_name}': {e}")
 
     def fetch_package_details(self, package_name: str) -> PackageDetails:
         """
