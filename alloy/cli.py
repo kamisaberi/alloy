@@ -75,19 +75,46 @@ def _save_installed_db(db: dict) -> None:
 # Command 1: alloy update (Remote Sync)
 # =========================================================================
 
+# =========================================================================
+# Command 1: alloy update (Remote Sync & Cache Clear)
+# =========================================================================
+
 @app.command()
 def update():
     """
     Syncs the local lightweight index with the remote package registry.
+    Automatically clears stale cached recipes to guarantee fresh installations [10, 15].
     """
     typer.secho("⏳ Fetching remote registry package index...", fg=typer.colors.CYAN)
     try:
-        manager.write_default_config()  # Ensure config exists [2]
+        # Step 1: Ensure global config exists [2]
+        manager.write_default_config()
+
+        # Step 2: Clear previously cached recipe files so they are replaced [10]
+        typer.echo("🧹 Clearing stale recipe cache...")
+        manager.cache.clear()
+
+        # Step 3: Fetch and replace the local index file with the latest remote version [15]
         count = manager.registry.update_registry()
+
         typer.secho(f"✅ Sync complete! Cached {count} package definitions locally.", fg=typer.colors.GREEN, bold=True)
     except Exception as e:
         typer.secho(f"❌ Update failed: {e}", fg=typer.colors.RED, err=True)
         raise typer.Exit(code=1)
+
+# @app.command()
+# def update():
+#     """
+#     Syncs the local lightweight index with the remote package registry.
+#     """
+#     typer.secho("⏳ Fetching remote registry package index...", fg=typer.colors.CYAN)
+#     try:
+#         manager.write_default_config()  # Ensure config exists [2]
+#         count = manager.registry.update_registry()
+#         typer.secho(f"✅ Sync complete! Cached {count} package definitions locally.", fg=typer.colors.GREEN, bold=True)
+#     except Exception as e:
+#         typer.secho(f"❌ Update failed: {e}", fg=typer.colors.RED, err=True)
+#         raise typer.Exit(code=1)
 
 
 # =========================================================================
