@@ -425,7 +425,7 @@ build_steps:
 
     if github_username.strip():
         username = github_username.strip().lower()
-        api_url = f"https://{username}.github.io/alloy-registry/v1"[15]
+        api_url = f"https://{username}.github.io/alloy-registry/v1"
 
         # Build the configuration data [2]
         config_data = {
@@ -444,7 +444,7 @@ build_steps:
 
             typer.secho(f"✅ Global settings configured successfully!", fg=typer.colors.GREEN, bold=True)
             typer.echo(f"   Saved to: {CONFIG_FILE}")
-            typer.echo(f"   Registry Pointing to: {api_url}")[15]
+            typer.echo(f"   Registry Pointing to: {api_url}")
         except Exception as e:
             typer.secho(f"❌ Failed to write global configuration: {e}", fg=typer.colors.RED)
     else:
